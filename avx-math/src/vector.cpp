@@ -1,64 +1,70 @@
+#include <avx-math/avx.h>
 #include <avx-math/vector.h>
+#include <cmath>
+#include <cstdio>
 
 #include <immintrin.h>
 
+namespace math {
 namespace {
 
-__attribute((always_inline)) inline void dot_product_aligned_n_individual(
-        __attribute((aligned(32))) point32f* a,
-        __attribute((aligned(32))) point32f* b,
-        __attribute((aligned(32))) float*    out,
-        size_t                               n) {
-    for (size_t i = 0; i < n; ++i) {
-        out[i] = a[i].x * b[i].x + a[i].y * b[i].y;
-    }
-}
+template <typename T>
+void dot_product_n_aligned_impl(
+        __attribute((aligned(64))) vector<T>* a,
+        __attribute((aligned(64))) vector<T>* b,
+        __attribute((aligned(64))) T*         out,
+        unsigned long long int                n) {}
 
 }  // namespace
 
-void dot_product_aligned_n(
-        __attribute((aligned(32))) point32f* a,
-        __attribute((aligned(32))) point32f* b,
-        __attribute((aligned(32))) float*    out,
-        unsigned long long                   n) {
+void dot_product_n_aligned(
+        __attribute((aligned(64))) vector32f* a,
+        __attribute((aligned(64))) vector32f* b,
+        __attribute((aligned(64))) float*     out,
+        unsigned long long int                n) {
     size_t i = 0;
-#ifdef __AVX512F__
-    for (; i + 16 < n; i += 16) {
-        __m512 a_0_7    = _mm512_load_ps(reinterpret_cast<float*>(a + i));
-        __m512 b_0_7    = _mm512_load_ps(reinterpret_cast<float*>(b + i));
-        __m512 prod_0_7 = _mm512_mul_ps(a_0_7, b_0_7);
-
-        __m512 a_8_15    = _mm512_load_ps(reinterpret_cast<float*>(a + i + 8));
-        __m512 b_8_15    = _mm512_load_ps(reinterpret_cast<float*>(b + i + 8));
-        __m512 prod_8_15 = _mm512_mul_ps(a_8_15, b_8_15);
-
-        __m512 result = _mm512_hadd_ps(prod_0_7, prod_8_15);
-
-        _mm512_store_ps(out, result);
-    }
-#endif
-#ifdef __AVX2__
+#ifdef __AVX__
+    float* af = reinterpret_cast<float*>(a);
     for (; i + 8 < n; i += 8) {
-        __m256 a_1_4    = _mm256_load_ps(reinterpret_cast<float*>(a + i));
-        __m256 b_1_4    = _mm256_load_ps(reinterpret_cast<float*>(b + i));
-        __m256 prod_1_4 = _mm256_mul_ps(a_1_4, b_1_4);
+        auto a_0_3 = avx<256>::load_aligned(af + i);
+        auto b_0_3 = avx<256>::load_aligned(bf + i);
+        // [a1x*b1x, a1y*b1y, a2x*b2x, a2y*b2y, ...]
+        auto prod_0_3 = a_0_3 * b_0_3;
 
-        __m256 a_5_8    = _mm256_load_ps(reinterpret_cast<float*>(a + i + 4));
-        __m256 b_5_8    = _mm256_load_ps(reinterpret_cast<float*>(b + i + 4));
-        __m256 prod_5_8 = _mm256_mul_ps(a_5_8, b_5_8);
+        auto a_4_7 = avx<256>::load_aligned(af + i + 4);
+        auto b_4_7 = avx<256>::load_aligned(bf + i + 4);
+        // [a4x*b4x, a4y*b4y, a5x*b5x, a5y*b5y, ...]
+        auto prod_4_7 = a_4_7 * b_4_7;
 
-        __m256 result = _mm256_hadd_ps(prod_1_4, prod_5_8);
+        // results is interleaved [r0, r1, r4, r5, r2, r3, r6, r7]
+        __m256 result_0_3 = _mm256_hadd_ps(prod_0_3.data, prod_0_3.data);
+        __m256 result_4_7 = _mm256_hadd_ps(prod_4_7.data, prod_4_7.data);
 
-        _mm256_store_ps(out, result);
+        _mm256_store_ps(out + i, result);
+        printf("i: %zu -> %zu\n", i, i + 8);
+        for (size_t j = 0; j < 8; ++j) {
+            printf("\t%f * %f + %f * %f -> %f\n",
+                   a[j].x,
+                   b[j].x,
+                   a[j].y,
+                   b[j].y,
+                   out[j]);
+            if (std::fabs(dot_product(a[j], b[j]) - result[j]) > 0.0001) {
+                printf("error\n");
+            }
+        }
     }
 #endif
-    dot_product_aligned_n_individual(a + i, b + i, out + i, n - i);
+    for (; i < n; ++i) {
+        out[i] = a[i].x * b[i].x + a[i].y * b[i].y;
+        printf("i: %zu\n", i);
+        printf("\t%f * %f + %f * %f -> %f\n",
+               a[i].x,
+               b[i].x,
+               a[i].y,
+               b[i].y,
+               out[i]);
+    }
 }
 
-void dot_product_aligned_n_slow(
-        __attribute((aligned(32))) point32f* a,
-        __attribute((aligned(32))) point32f* b,
-        __attribute((aligned(32))) float*    out,
-        unsigned long long                   n) {
-    dot_product_aligned_n_individual(a, b, out, n);
-}
+}  // namespace math
