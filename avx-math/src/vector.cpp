@@ -24,6 +24,7 @@ void dot_product_n_aligned(
 #ifdef __AVX__
     float* af = reinterpret_cast<float*>(a);
     float* bf = reinterpret_cast<float*>(b);
+#pragma unroll 4
     for (; i + 8 < n; i += 8) {
         // [a1x*b1x, a1y*b1y, a2x*b2x, a2y*b2y, ...]
         auto prod_0_3 = avx::load_aligned<avx::f32x8>(af + i)
@@ -35,7 +36,7 @@ void dot_product_n_aligned(
 
         // [r0, r1, r4, r5, r2, r3, r6, r7]
         auto interleaved = avx::hadd(prod_0_3, prod_4_7);
-        auto result = permute4x64(interleaved, avx::control4<0, 2, 1, 3>());
+        auto result = avx::permute4x64(interleaved, avx::control4<0, 2, 1, 3>());
 
         avx::store_aligned(out + i, result);
     }
