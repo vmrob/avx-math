@@ -4,16 +4,6 @@
 #include <immintrin.h>
 
 namespace math {
-namespace {
-
-template <typename T>
-void dot_product_n_aligned_impl(
-        __attribute((aligned(64))) vector<T>* a,
-        __attribute((aligned(64))) vector<T>* b,
-        __attribute((aligned(64))) T*         out,
-        unsigned long long int                n) {}
-
-}  // namespace
 
 void dot_product_n_aligned(
         __attribute((aligned(64))) vector32f* a,
