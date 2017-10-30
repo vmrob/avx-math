@@ -26,12 +26,12 @@ void dot_product_n_aligned(
     float* bf = reinterpret_cast<float*>(b);
     for (; i + 8 < n; i += 8) {
         // [a1x*b1x, a1y*b1y, a2x*b2x, a2y*b2y, ...]
-        auto prod_0_3
-                = avx::load_aligned<8>(af + i) * avx::load_aligned<8>(bf + i);
+        auto prod_0_3 = avx::load_aligned<avx::f32x8>(af + i)
+                        * avx::load_aligned<avx::f32x8>(bf + i);
 
         // [a4x*b4x, a4y*b4y, a5x*b5x, a5y*b5y, ...]
-        auto prod_4_7 = avx::load_aligned<8>(af + i + 8)
-                        * avx::load_aligned<8>(bf + i + 8);
+        auto prod_4_7 = avx::load_aligned<avx::f32x8>(af + i + 8)
+                        * avx::load_aligned<avx::f32x8>(bf + i + 8);
 
         // [r0, r1, r4, r5, r2, r3, r6, r7]
         auto result_interleaved = avx::hadd(prod_0_3, prod_4_7);
