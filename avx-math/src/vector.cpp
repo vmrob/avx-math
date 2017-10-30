@@ -25,45 +25,29 @@ void dot_product_n_aligned(
     size_t i = 0;
 #ifdef __AVX__
     float* af = reinterpret_cast<float*>(a);
+    float* bf = reinterpret_cast<float*>(b);
     for (; i + 8 < n; i += 8) {
-        auto a_0_3 = avx<256>::load_aligned(af + i);
-        auto b_0_3 = avx<256>::load_aligned(bf + i);
         // [a1x*b1x, a1y*b1y, a2x*b2x, a2y*b2y, ...]
-        auto prod_0_3 = a_0_3 * b_0_3;
+        auto prod_0_3
+                = avx::load_aligned<8>(af + i) * avx::load_aligned<8>(bf + i);
 
-        auto a_4_7 = avx<256>::load_aligned(af + i + 4);
-        auto b_4_7 = avx<256>::load_aligned(bf + i + 4);
         // [a4x*b4x, a4y*b4y, a5x*b5x, a5y*b5y, ...]
-        auto prod_4_7 = a_4_7 * b_4_7;
+        auto prod_4_7 = avx::load_aligned<8>(af + i + 8)
+                        * avx::load_aligned<8>(bf + i + 8);
 
-        // results is interleaved [r0, r1, r4, r5, r2, r3, r6, r7]
-        __m256 result_0_3 = _mm256_hadd_ps(prod_0_3.data, prod_0_3.data);
-        __m256 result_4_7 = _mm256_hadd_ps(prod_4_7.data, prod_4_7.data);
+        // [r0, r1, r4, r5, r2, r3, r6, r7]
+        auto result_interleaved = avx::hadd(prod_0_3, prod_4_7);
 
-        _mm256_store_ps(out + i, result);
-        printf("i: %zu -> %zu\n", i, i + 8);
-        for (size_t j = 0; j < 8; ++j) {
-            printf("\t%f * %f + %f * %f -> %f\n",
-                   a[j].x,
-                   b[j].x,
-                   a[j].y,
-                   b[j].y,
-                   out[j]);
-            if (std::fabs(dot_product(a[j], b[j]) - result[j]) > 0.0001) {
-                printf("error\n");
-            }
-        }
+        __m256i result_i = _mm256_permute4x64_epi64(
+                _mm256_castps_si256(result_interleaved.data), 0b11011000);
+
+        __m256 result = _mm256_castsi256_ps(result_i);
+
+        avx::store_aligned(out + i, {result});
     }
 #endif
     for (; i < n; ++i) {
         out[i] = a[i].x * b[i].x + a[i].y * b[i].y;
-        printf("i: %zu\n", i);
-        printf("\t%f * %f + %f * %f -> %f\n",
-               a[i].x,
-               b[i].x,
-               a[i].y,
-               b[i].y,
-               out[i]);
     }
 }
 
