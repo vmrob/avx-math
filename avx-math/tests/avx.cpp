@@ -193,3 +193,21 @@ TEST(f32x4, hadd) {
 TEST(f32x8, hadd) {
     test_32_hadd<float, avx::f32x8>();
 }
+
+template <typename T>
+void test_permute4x64() {
+    auto a        = T::from(0, 1, 2, 3, 4, 5, 6, 7);
+    auto expected = T::from(0, 1, 4, 5, 6, 7, 2, 3);  // [0, 2, 3, 1]
+
+    auto actual = avx::permute4x64(a, avx::control4<0, 2, 3, 1>());
+
+    EXPECT_EQ(expected, actual);
+}
+
+TEST(i32x8, permute4x64) {
+    test_permute4x64<avx::i32x8>();
+}
+
+TEST(f32x8, permute4x64) {
+    test_permute4x64<avx::f32x8>();
+}

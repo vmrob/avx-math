@@ -34,14 +34,10 @@ void dot_product_n_aligned(
                         * avx::load_aligned<avx::f32x8>(bf + i + 8);
 
         // [r0, r1, r4, r5, r2, r3, r6, r7]
-        auto result_interleaved = avx::hadd(prod_0_3, prod_4_7);
+        auto interleaved = avx::hadd(prod_0_3, prod_4_7);
+        auto result = permute4x64(interleaved, avx::control4<0, 2, 1, 3>());
 
-        __m256i result_i = _mm256_permute4x64_epi64(
-                _mm256_castps_si256(result_interleaved.data), 0b11011000);
-
-        __m256 result = _mm256_castsi256_ps(result_i);
-
-        avx::store_aligned(out + i, {result});
+        avx::store_aligned(out + i, result);
     }
 #endif
     for (; i < n; ++i) {

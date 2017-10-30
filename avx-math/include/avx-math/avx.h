@@ -2,12 +2,34 @@
 
 #include <immintrin.h>
 
+#include <type_traits>
 #include <cstdint>
 
 namespace avx {
 
+template <unsigned i0, unsigned i1, unsigned i2, unsigned i3>
+struct control4 : std::integral_constant<
+                          unsigned,
+                          (i3 << 6 | i2 << 4 | i1 << 2 | i0 << 0)> {
+    static_assert(i0 < 4, "out of bounds");
+    static_assert(i1 < 4, "out of bounds");
+    static_assert(i2 < 4, "out of bounds");
+    static_assert(i3 < 4, "out of bounds");
+};
+
 template <size_t width>
 struct i32;
+template <>
+struct i32<4>;
+template <>
+struct i32<8>;
+
+template <size_t width>
+struct f32;
+template <>
+struct f32<4>;
+template <>
+struct f32<8>;
 
 template <>
 struct i32<4> {
@@ -19,6 +41,8 @@ struct i32<4> {
     static i32<4> from(int32_t i3, int32_t i2, int32_t i1, int32_t i0) {
         return {_mm_set_epi32(i0, i1, i2, i3)};
     }
+
+    explicit operator f32<4>() const;
 
     bool operator==(i32<4> rhs) const {
         __m128i result = _mm_xor_si128(data, rhs.data);
@@ -45,6 +69,8 @@ struct i32<8> {
         return {_mm256_set_epi32(i0, i1, i2, i3, i4, i5, i6, i7)};
     }
 
+    explicit operator f32<8>() const;
+
     bool operator==(i32<8> rhs) const {
         __m256i result    = _mm256_xor_si256(data, rhs.data);
         __m128  result_lo = _mm256_castps256_ps128(result);
@@ -56,9 +82,6 @@ struct i32<8> {
     i32<4> high_bits() const { return {_mm256_extracti128_si256(data, 1)}; }
 };
 
-template <size_t width>
-struct f32;
-
 template <>
 struct f32<4> {
     __m128 data;
@@ -69,6 +92,8 @@ struct f32<4> {
     static f32<4> from(float f3, float f2, float f1, float f0) {
         return {_mm_set_ps(f0, f1, f2, f3)};
     }
+
+    explicit operator i32<4>() const;
 
     friend f32<4> operator*(f32<4> lhs, f32<4> rhs) {
         return {_mm_mul_ps(lhs.data, rhs.data)};
@@ -105,9 +130,12 @@ struct f32<8> {
         return {_mm256_set_ps(f0, f1, f2, f3, f4, f5, f6, f7)};
     }
 
+    explicit operator i32<8>() const;
+
     friend f32<8> operator*(f32<8> lhs, f32<8> rhs) {
         return {_mm256_mul_ps(lhs.data, rhs.data)};
     }
+
     f32<8>& operator*=(f32<8> rhs) {
         data = _mm256_mul_ps(data, rhs.data);
         return *this;
@@ -129,6 +157,22 @@ using i32x8 = i32<8>;
 using i32x4 = i32<4>;
 using f32x8 = f32<8>;
 using f32x4 = f32<4>;
+
+inline i32<4>::operator f32<4>() const {
+    return {_mm_castsi128_ps(data)};
+}
+
+inline i32<8>::operator f32<8>() const {
+    return {_mm256_castsi256_ps(data)};
+}
+
+inline f32<4>::operator i32<4>() const {
+    return {_mm_castps_si128(data)};
+}
+
+inline f32<8>::operator i32<8>() const {
+    return {_mm256_castps_si256(data)};
+}
 
 ///// load aligned /////
 
@@ -238,6 +282,18 @@ inline f32x8 hadd(f32x8 v1, f32x8 v2) {
 
 inline f32x4 hadd(f32x4 v1, f32x4 v2) {
     return {_mm_hadd_ps(v1.data, v2.data)};
+}
+
+///// permute /////
+
+template <unsigned... flags>
+inline i32x8 permute4x64(i32x8 v, control4<flags...>) {
+    return {_mm256_permute4x64_epi64(v.data, control4<flags...>::value)};
+}
+
+template <unsigned... flags>
+inline f32x8 permute4x64(f32x8 v, control4<flags...>) {
+    return {_mm256_permute4x64_epi64(static_cast<i32x8>(v).data, control4<flags...>::value)};
 }
 
 }  // namespace avx
