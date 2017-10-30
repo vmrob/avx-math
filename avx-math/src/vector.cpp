@@ -1,7 +1,5 @@
 #include <avx-math/avx.h>
 #include <avx-math/vector.h>
-#include <cmath>
-#include <cstdio>
 
 #include <immintrin.h>
 
