@@ -27,6 +27,20 @@ std::ostream& operator<<(std::ostream& os, avx::f32x8 v) {
 
 }  // namespace
 
+TEST(i32x4, from) {
+    int32_t expected[4] = {0, 1, 2, 3};
+    int32_t actual[4];
+    avx::store_unaligned(actual, avx::i32x4::from(0, 1, 2, 3));
+    EXPECT_TRUE(std::equal(expected, expected + 4, actual));
+}
+
+TEST(i32x8, from) {
+    int32_t expected[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+    int32_t actual[8];
+    avx::store_unaligned(actual, avx::i32x8::from(0, 1, 2, 3, 4, 5, 6, 7));
+    EXPECT_TRUE(std::equal(expected, expected + 8, actual));
+}
+
 TEST(f32x4, from) {
     float expected[4] = {0.0, 1.0, 2.0, 3.0};
     float actual[4];
@@ -43,11 +57,10 @@ TEST(f32x8, from) {
     EXPECT_TRUE(std::equal(expected, expected + 8, actual));
 }
 
-template <typename T>
-void test_f32_load_store_aligned() {
-    __attribute((aligned(32))) float expected[]
-            = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-    __attribute((aligned(32))) float actual[T::size];
+template <typename SourceT, typename T>
+void test_32_load_store_aligned() {
+    __attribute((aligned(32))) SourceT expected[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    __attribute((aligned(32))) SourceT actual[T::size];
 
     auto v = avx::load_aligned<T>(expected);
     avx::store_aligned(actual, v);
@@ -55,36 +68,58 @@ void test_f32_load_store_aligned() {
     EXPECT_TRUE(std::equal(expected, expected + T::size, actual));
 }
 
+TEST(i32x4, load_store_aligned) {
+    test_32_load_store_aligned<int32_t, avx::i32x4>();
+}
+
+TEST(i32x8, load_store_aligned) {
+    test_32_load_store_aligned<int32_t, avx::i32x4>();
+}
+
 TEST(f32x4, load_store_aligned) {
-    test_f32_load_store_aligned<avx::f32x4>();
+    test_32_load_store_aligned<float, avx::f32x4>();
 }
 
 TEST(f32x8, load_store_aligned) {
-    test_f32_load_store_aligned<avx::f32x4>();
+    test_32_load_store_aligned<float, avx::f32x4>();
 }
 
-template <typename T>
-void test_f32_load_store_unaligned() {
+template <typename SourceT, typename T>
+void test_32_load_store_unaligned() {
     // -1.0 is only used for padding
-    __attribute((aligned(32))) float expected[]
-            = {-1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-    __attribute((aligned(32))) float actual[1 + T::size] = {-1.0};
+    __attribute((aligned(32))) SourceT expected[]
+            = {-1, 0, 1, 2, 3, 4, 5, 6, 7};
+    __attribute((aligned(32))) SourceT actual[1 + T::size] = {-1};
 
-    ASSERT_TRUE(*reinterpret_cast<uint64_t*>(&expected) % 32 == 0);
-    ASSERT_TRUE(*reinterpret_cast<uint64_t*>(&actual) % 32 == 0);
+    // do the test twice because one of these will have to be unaligned
+    {
+        auto v = avx::load_unaligned<T>(expected);
+        avx::store_unaligned(actual, v);
 
-    auto v = avx::load_unaligned<T>(expected + 1);
-    avx::store_unaligned(actual + 1, v);
+        EXPECT_TRUE(std::equal(expected, expected + T::size, actual));
+    }
+    {
+        auto v = avx::load_unaligned<T>(expected + 1);
+        avx::store_unaligned(actual + 1, v);
 
-    EXPECT_TRUE(std::equal(expected, expected + 1 + T::size, actual));
+        EXPECT_TRUE(std::equal(expected, expected + 1 + T::size, actual));
+    }
+}
+
+TEST(i32x4, load_store_unaligned) {
+    test_32_load_store_unaligned<int32_t, avx::i32x4>();
+}
+
+TEST(i32x8, load_store_unaligned) {
+    test_32_load_store_unaligned<int32_t, avx::i32x8>();
 }
 
 TEST(f32x4, load_store_unaligned) {
-    test_f32_load_store_unaligned<avx::f32x4>();
+    test_32_load_store_unaligned<float, avx::f32x4>();
 }
 
 TEST(f32x8, load_store_unaligned) {
-    test_f32_load_store_unaligned<avx::f32x8>();
+    test_32_load_store_unaligned<float, avx::f32x8>();
 }
 
 template <typename T>
@@ -128,11 +163,11 @@ TEST(f32x8, equality) {
     test_f32_equality<avx::f32x8>();
 }
 
-template <typename T>
-void test_f32_hadd() {
-    float a[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-    float b[] = {8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0};
-    float c[] = {1.0, 5.0, 17.0, 21.0, 9.0, 13.0, 25.0, 29.0};
+template <typename SourceT, typename T>
+void test_32_hadd() {
+    SourceT a[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    SourceT b[] = {8, 9, 10, 11, 12, 13, 14, 15};
+    SourceT c[] = {1, 5, 17, 21, 9, 13, 25, 29};
 
     auto v1       = avx::load_unaligned<T>(a);
     auto v2       = avx::load_unaligned<T>(b);
@@ -143,10 +178,18 @@ void test_f32_hadd() {
     EXPECT_EQ(expected, actual);
 }
 
+TEST(i32x4, hadd) {
+    test_32_hadd<int32_t, avx::i32x4>();
+}
+
+TEST(i32x8, hadd) {
+    test_32_hadd<int32_t, avx::i32x8>();
+}
+
 TEST(f32x4, hadd) {
-    test_f32_hadd<avx::f32x4>();
+    test_32_hadd<float, avx::f32x4>();
 }
 
 TEST(f32x8, hadd) {
-    test_f32_hadd<avx::f32x8>();
+    test_32_hadd<float, avx::f32x8>();
 }
