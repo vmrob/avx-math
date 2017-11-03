@@ -2,8 +2,8 @@
 
 #include <immintrin.h>
 
-#include <type_traits>
 #include <cstdint>
+#include <type_traits>
 
 namespace avx {
 
@@ -174,6 +174,31 @@ inline f32<8>::operator i32<8>() const {
     return {_mm256_castps_si256(data)};
 }
 
+///// avx_vector /////
+
+template <typename T>
+struct widest_avx_vector;
+
+template <>
+struct widest_avx_vector<float> {
+    using type = avx::f32x8;
+};
+
+// template <>
+// struct widest_avx_vector<double> {
+//     using type = avx::f64x4;
+// };
+
+template <>
+struct widest_avx_vector<int32_t> {
+    using type = avx::i32x8;
+};
+
+// template <>
+// struct widest_avx_vector<int64_t> {
+//     using type = avx::i64x4;
+// };
+
 ///// load aligned /////
 
 template <typename T>
@@ -293,7 +318,8 @@ inline i32x8 permute4x64(i32x8 v, control4<flags...>) {
 
 template <unsigned... flags>
 inline f32x8 permute4x64(f32x8 v, control4<flags...>) {
-    return {_mm256_permute4x64_epi64(static_cast<i32x8>(v).data, control4<flags...>::value)};
+    return {_mm256_permute4x64_epi64(
+            static_cast<i32x8>(v).data, control4<flags...>::value)};
 }
 
 }  // namespace avx

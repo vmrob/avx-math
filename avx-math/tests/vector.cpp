@@ -75,7 +75,7 @@ public:
     }
 
     void calculate() {
-        dot_product_n(a, b, expected, _size);
+        dot_product_n_unaligned(a, b, expected, _size);
         dot_product_n_aligned(a, b, result, _size);
     }
 

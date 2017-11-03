@@ -51,27 +51,76 @@ static void BM_dot_product_n_aligned(benchmark::State& state) {
         benchmark::DoNotOptimize(data.result);
         benchmark::ClobberMemory();
     }
-    state.SetItemsProcessed(state.iterations() * 8);
+    state.SetItemsProcessed(state.iterations() * n);
 }
 
 BENCHMARK(BM_dot_product_n_aligned)->Range(2, 16192);
 
-static void BM_dot_product_n(benchmark::State& state) {
-    const size_t n = state.range(0);
-
-    test_data data{n};
+template <size_t I>
+static void BM_dot_product_impl(benchmark::State& state) {
+    test_data data{I};
 
     while (state.KeepRunning()) {
-        dot_product_n(data.a, data.b, data.result, n);
+        dot_product_n_aligned(
+                data.a,
+                data.b,
+                data.result,
+                std::integral_constant<size_t, I>{});
 
         benchmark::DoNotOptimize(data.a);
         benchmark::DoNotOptimize(data.b);
         benchmark::DoNotOptimize(data.result);
         benchmark::ClobberMemory();
     }
-    state.SetItemsProcessed(state.iterations() * 8);
+    state.SetItemsProcessed(state.iterations() * I);
 }
 
-BENCHMARK(BM_dot_product_n)->Range(2, 16192);
+static void BM_dot_product_n_aligned_static_2(benchmark::State& state) {
+    BM_dot_product_impl<2>(state);
+}
+BENCHMARK(BM_dot_product_n_aligned_static_2);
+
+static void BM_dot_product_n_aligned_static_8(benchmark::State& state) {
+    BM_dot_product_impl<8>(state);
+}
+BENCHMARK(BM_dot_product_n_aligned_static_8);
+
+static void BM_dot_product_n_aligned_static_64(benchmark::State& state) {
+    BM_dot_product_impl<64>(state);
+}
+BENCHMARK(BM_dot_product_n_aligned_static_64);
+
+static void BM_dot_product_n_aligned_static_512(benchmark::State& state) {
+    BM_dot_product_impl<512>(state);
+}
+BENCHMARK(BM_dot_product_n_aligned_static_512);
+
+static void BM_dot_product_n_aligned_static_4096(benchmark::State& state) {
+    BM_dot_product_impl<4096>(state);
+}
+BENCHMARK(BM_dot_product_n_aligned_static_4096);
+
+static void BM_dot_product_n_aligned_static_16192(benchmark::State& state) {
+    BM_dot_product_impl<16192>(state);
+}
+BENCHMARK(BM_dot_product_n_aligned_static_16192);
+
+static void BM_dot_product_n_unaligned(benchmark::State& state) {
+    const size_t n = state.range(0);
+
+    test_data data{n};
+
+    while (state.KeepRunning()) {
+        dot_product_n_unaligned(data.a, data.b, data.result, n);
+
+        benchmark::DoNotOptimize(data.a);
+        benchmark::DoNotOptimize(data.b);
+        benchmark::DoNotOptimize(data.result);
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(state.iterations() * n);
+}
+
+BENCHMARK(BM_dot_product_n_unaligned)->Range(2, 16192);
 
 BENCHMARK_MAIN();
