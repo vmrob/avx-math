@@ -1,4 +1,4 @@
-#include <avx-math/vector.h>
+#include <simd/math/vector.h>
 
 #include <benchmark/benchmark.h>
 
@@ -7,7 +7,7 @@
 
 using namespace math;
 
-void gen_vectors(vector32f* vectors, size_t n) {
+void gen_vectors(vector2f* vectors, size_t n) {
     std::random_device                    rd;
     std::mt19937                          gen(rd());
     std::uniform_real_distribution<float> dis(-10000.0f, 10000.0f);
@@ -18,15 +18,14 @@ void gen_vectors(vector32f* vectors, size_t n) {
 }
 
 struct test_data {
-    vector32f* a      = nullptr;
-    vector32f* b      = nullptr;
-    float*     result = nullptr;
+    vector2f* a   = nullptr;
+    vector2f* b   = nullptr;
+    float*    out = nullptr;
 
     test_data(size_t n) {
-        posix_memalign(reinterpret_cast<void**>(&a), 32, sizeof(vector32f) * n);
-        posix_memalign(reinterpret_cast<void**>(&b), 32, sizeof(vector32f) * n);
-        posix_memalign(
-                reinterpret_cast<void**>(&result), 32, sizeof(float) * n);
+        posix_memalign(reinterpret_cast<void**>(&a), 32, sizeof(vector2f) * n);
+        posix_memalign(reinterpret_cast<void**>(&b), 32, sizeof(vector2f) * n);
+        posix_memalign(reinterpret_cast<void**>(&out), 32, sizeof(float) * n);
         gen_vectors(a, n);
         gen_vectors(b, n);
     }
@@ -34,7 +33,7 @@ struct test_data {
     ~test_data() {
         free(a);
         free(b);
-        free(result);
+        free(out);
     }
 };
 
@@ -44,11 +43,15 @@ static void BM_dot_product_n_aligned(benchmark::State& state) {
     test_data data{n};
 
     while (state.KeepRunning()) {
-        dot_product_n_aligned(data.a, data.b, data.result, n);
+        dot_product_n(
+                make_aligned_byte_view<32>(data.a),
+                make_aligned_byte_view<32>(data.b),
+                make_aligned_byte_view<32>(data.out),
+                n);
 
         benchmark::DoNotOptimize(data.a);
         benchmark::DoNotOptimize(data.b);
-        benchmark::DoNotOptimize(data.result);
+        benchmark::DoNotOptimize(data.out);
         benchmark::ClobberMemory();
     }
     state.SetItemsProcessed(state.iterations() * n);
@@ -61,15 +64,15 @@ static void BM_dot_product_impl(benchmark::State& state) {
     test_data data{I};
 
     while (state.KeepRunning()) {
-        dot_product_n_aligned(
-                data.a,
-                data.b,
-                data.result,
+        dot_product_n(
+                make_aligned_byte_view<32>(data.a),
+                make_aligned_byte_view<32>(data.b),
+                make_aligned_byte_view<32>(data.out),
                 std::integral_constant<size_t, I>{});
 
         benchmark::DoNotOptimize(data.a);
         benchmark::DoNotOptimize(data.b);
-        benchmark::DoNotOptimize(data.result);
+        benchmark::DoNotOptimize(data.out);
         benchmark::ClobberMemory();
     }
     state.SetItemsProcessed(state.iterations() * I);
@@ -111,11 +114,15 @@ static void BM_dot_product_n_unaligned(benchmark::State& state) {
     test_data data{n};
 
     while (state.KeepRunning()) {
-        dot_product_n_unaligned(data.a, data.b, data.result, n);
+        dot_product_n(
+                make_unaligned_byte_view(data.a),
+                make_unaligned_byte_view(data.b),
+                make_unaligned_byte_view(data.out),
+                n);
 
         benchmark::DoNotOptimize(data.a);
         benchmark::DoNotOptimize(data.b);
-        benchmark::DoNotOptimize(data.result);
+        benchmark::DoNotOptimize(data.out);
         benchmark::ClobberMemory();
     }
     state.SetItemsProcessed(state.iterations() * n);

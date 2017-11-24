@@ -1,8 +1,8 @@
 cc_binary(
     name = "main",
-    srcs = ["vector.cpp"],
+    srcs = ["math/vector.cpp"],
     deps = [
-        "//avx-math",
+        "//simd",
         "@benchmark//:main"
     ],
     visibility = ["//main:__pkg__"],
