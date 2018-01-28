@@ -5,11 +5,9 @@
 #include <type_traits>
 
 TEST(aligned_byte_view, basics) {
-    static_assert(
-            !std::is_same<
-                    aligned_byte_view<int, 4>,
-                    aligned_byte_view<int, 8>>::value,
-            "types should be different");
+    static_assert(!std::is_same<
+                  aligned_byte_view<int, 4>,
+                  aligned_byte_view<int, 8>>::value);
 
     __attribute((aligned(32))) int32_t arr[8];
     aligned_byte_view<int, 4>          ptr{arr};
@@ -19,15 +17,12 @@ TEST(aligned_byte_view, basics) {
 }
 
 TEST(unaligned_byte_view, basics) {
-    static_assert(
-            !std::is_same<
-                    unaligned_byte_view<int>,
-                    unaligned_byte_view<float>>::value,
-            "types should be different");
+    static_assert(!std::is_same<
+                  unaligned_byte_view<int>,
+                  unaligned_byte_view<float>>::value);
     static_assert(
             !std::is_same<unaligned_byte_view<int>, aligned_byte_view<int, 1>>::
-                    value,
-            "incompatible with aligned_byte_view");
+                    value);
 
     int32_t                  arr[8];
     unaligned_byte_view<int> ptr{arr};

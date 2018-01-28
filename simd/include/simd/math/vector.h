@@ -4,6 +4,7 @@
 #include <simd/byte_view.h>
 
 #include <cstdint>
+#include <type_traits>
 
 namespace math {
 
@@ -12,6 +13,12 @@ template <typename T>
 struct vector2 {
     T x;
     T y;
+    template <typename U>
+    U as() {
+        static_assert(std::is_pointer_v<U>);
+        static_assert(std::is_trivial_v<std::remove_pointer_t<U>>);
+        return reinterpret_cast<U>(this);
+    }
 };
 #pragma pack(pop)
 
@@ -37,9 +44,9 @@ auto dot_product_n(
             std::is_floating_point<ComponentType>::value,
             "dot_product_n only supports floating point types");
     auto af = aligned_byte_view<ComponentType, Alignment>{
-            reinterpret_cast<ComponentType*>(a.get())};
+            a.get()->template as<ComponentType*>()};
     auto bf = aligned_byte_view<ComponentType, Alignment>{
-            reinterpret_cast<ComponentType*>(b.get())};
+            b.get()->template as<ComponentType*>()};
     size_t i = 0;
 #ifdef __AVX__
     if constexpr (Alignment >= 32) {

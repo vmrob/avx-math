@@ -13,10 +13,10 @@ template <unsigned i0, unsigned i1, unsigned i2, unsigned i3>
 struct control4 : std::integral_constant<
                           unsigned,
                           (i3 << 6 | i2 << 4 | i1 << 2 | i0 << 0)> {
-    static_assert(i0 < 4, "out of bounds");
-    static_assert(i1 < 4, "out of bounds");
-    static_assert(i2 < 4, "out of bounds");
-    static_assert(i3 < 4, "out of bounds");
+    static_assert(i0 < 4);
+    static_assert(i1 < 4);
+    static_assert(i2 < 4);
+    static_assert(i3 < 4);
 };
 
 template <typename Rep, size_t Bits>
@@ -280,4 +280,3 @@ inline f32x8 permute4x64(f32x8 v, control4<flags...>) {
 }
 
 }  // namespace simd
-
