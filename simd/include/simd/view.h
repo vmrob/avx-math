@@ -142,12 +142,12 @@ struct aligned_view {
 };
 
 template <size_t Alignment, typename T>
-aligned_view<T, Alignment> make_aligned_view(T* ptr) {
+aligned_view<T, Alignment> as_aligned_view(T* ptr) {
     assert(*reinterpret_cast<size_t*>(&ptr) % Alignment == 0);
     return {ptr};
 }
 
 template <typename T>
-unaligned_view<T> make_unaligned_view(T* ptr) {
+unaligned_view<T> as_unaligned_view(T* ptr) {
     return {ptr};
 }

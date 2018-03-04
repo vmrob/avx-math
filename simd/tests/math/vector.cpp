@@ -10,7 +10,7 @@ namespace {
 
 std::ostream& operator<<(std::ostream& os, simd::f32x8 v) {
     __attribute((aligned(32))) float out[8];
-    v.store(make_aligned_view<32>(out));
+    v.store(as_aligned_view<32>(out));
     // clang-format off
     os << "["
         << out[0] << ", "
@@ -88,14 +88,14 @@ public:
 
     void calculate() {
         dot_product_n(
-                make_unaligned_view(a),
-                make_unaligned_view(b),
-                make_unaligned_view(expected),
+                as_unaligned_view(a),
+                as_unaligned_view(b),
+                as_unaligned_view(expected),
                 _size);
         dot_product_n(
-                make_aligned_view<32>(a),
-                make_aligned_view<32>(b),
-                make_aligned_view<32>(result),
+                as_aligned_view<32>(a),
+                as_aligned_view<32>(b),
+                as_aligned_view<32>(result),
                 _size);
     }
 

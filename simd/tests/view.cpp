@@ -54,13 +54,13 @@ TEST(unaligned_view, assignment) {
 TEST(aligned_view, make) {
     __attribute((aligned(64))) int i;
 
-    auto ptr = make_aligned_view<64>(&i);
+    auto ptr = as_aligned_view<64>(&i);
     EXPECT_EQ(&i, ptr.get());
 }
 
 TEST(unaligned_view, make) {
     int  i;
-    auto ptr = make_unaligned_view(&i);
+    auto ptr = as_unaligned_view(&i);
     EXPECT_EQ(&i, ptr.get());
 }
 
@@ -72,25 +72,25 @@ TEST(aligned_view, dereference) {
     {
         __attribute((aligned(64))) foo f;
 
-        auto ptr = make_aligned_view<64>(&f);
+        auto ptr = as_aligned_view<64>(&f);
         EXPECT_EQ(0, ptr->bar());
     }
     {
         __attribute((aligned(64))) const foo f;
 
-        auto ptr = make_aligned_view<64>(&f);
+        auto ptr = as_aligned_view<64>(&f);
         EXPECT_EQ(0, ptr->bar());
     }
     {
         __attribute((aligned(64))) int i = 0;
 
-        auto ptr = make_aligned_view<64>(&i);
+        auto ptr = as_aligned_view<64>(&i);
         EXPECT_EQ(0, *ptr);
     }
     {
         __attribute((aligned(64))) const int i = 0;
 
-        auto ptr = make_aligned_view<64>(&i);
+        auto ptr = as_aligned_view<64>(&i);
         EXPECT_EQ(0, *ptr);
     }
 }
@@ -102,22 +102,22 @@ TEST(unaligned_view, dereference) {
 
     {
         foo  f;
-        auto ptr = make_unaligned_view(&f);
+        auto ptr = as_unaligned_view(&f);
         EXPECT_EQ(0, ptr->bar());
     }
     {
         const foo f;
-        auto      ptr = make_unaligned_view(&f);
+        auto      ptr = as_unaligned_view(&f);
         EXPECT_EQ(0, ptr->bar());
     }
     {
         int  i   = 0;
-        auto ptr = make_unaligned_view(&i);
+        auto ptr = as_unaligned_view(&i);
         EXPECT_EQ(0, *ptr);
     }
     {
         const int i   = 0;
-        auto      ptr = make_unaligned_view(&i);
+        auto      ptr = as_unaligned_view(&i);
         EXPECT_EQ(0, *ptr);
     }
 }
@@ -127,38 +127,38 @@ TEST(aligned_view, addition_subtraction) {
     {
         __attribute((aligned(32))) int32_t i;
 
-        auto ptr = make_aligned_view<32>(&i);
-        EXPECT_EQ(make_aligned_view<32>(&i + 8).get(), (ptr + 1).get());
+        auto ptr = as_aligned_view<32>(&i);
+        EXPECT_EQ(as_aligned_view<32>(&i + 8).get(), (ptr + 1).get());
     }
     {
         __attribute((aligned(32))) int32_t i;
 
-        const auto ptr = make_aligned_view<32>(&i);
-        EXPECT_EQ(make_aligned_view<32>(&i + 8).get(), (ptr + 1).get());
+        const auto ptr = as_aligned_view<32>(&i);
+        EXPECT_EQ(as_aligned_view<32>(&i + 8).get(), (ptr + 1).get());
     }
     {
         __attribute((aligned(64))) int32_t i;
 
-        auto ptr = make_aligned_view<64>(&i);
-        EXPECT_EQ(make_aligned_view<64>(&i + 16).get(), (ptr + 1).get());
+        auto ptr = as_aligned_view<64>(&i);
+        EXPECT_EQ(as_aligned_view<64>(&i + 16).get(), (ptr + 1).get());
     }
     {
         __attribute((aligned(64))) int32_t i;
 
-        const auto ptr = make_aligned_view<64>(&i);
-        EXPECT_EQ(make_aligned_view<64>(&i + 16).get(), (ptr + 1).get());
+        const auto ptr = as_aligned_view<64>(&i);
+        EXPECT_EQ(as_aligned_view<64>(&i + 16).get(), (ptr + 1).get());
     }
 }
 
 TEST(unaligned_view, addition_subtraction) {
     {
         int32_t i;
-        auto    ptr = make_unaligned_view(&i);
-        EXPECT_EQ(make_unaligned_view(&i + 8).get(), (ptr + 8).get());
+        auto    ptr = as_unaligned_view(&i);
+        EXPECT_EQ(as_unaligned_view(&i + 8).get(), (ptr + 8).get());
     }
     {
         int32_t    i;
-        const auto ptr = make_unaligned_view(&i);
-        EXPECT_EQ(make_unaligned_view(&i + 8).get(), (ptr + 8).get());
+        const auto ptr = as_unaligned_view(&i);
+        EXPECT_EQ(as_unaligned_view(&i + 8).get(), (ptr + 8).get());
     }
 }
