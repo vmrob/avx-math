@@ -1,32 +1,32 @@
 cc_test(
     name = "bit_vector",
-	size = "small",
+    size = "small",
     srcs = ["bit_vector.cpp"],
+    visibility = ["//main:__pkg__"],
     deps = [
         "//simd",
-        "@gtest//:main"
+        "@gtest//:main",
     ],
-    visibility = ["//main:__pkg__"]
 )
 
 cc_test(
-    name = "byte_view",
-	size = "small",
-    srcs = ["byte_view.cpp"],
+    name = "view",
+    size = "small",
+    srcs = ["view.cpp"],
+    visibility = ["//main:__pkg__"],
     deps = [
         "//simd",
-        "@gtest//:main"
+        "@gtest//:main",
     ],
-    visibility = ["//main:__pkg__"]
 )
 
 cc_test(
     name = "vector",
-	size = "small",
+    size = "small",
     srcs = ["math/vector.cpp"],
+    visibility = ["//main:__pkg__"],
     deps = [
         "//simd",
-        "@gtest//:main"
+        "@gtest//:main",
     ],
-    visibility = ["//main:__pkg__"]
 )

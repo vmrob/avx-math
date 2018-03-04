@@ -1,7 +1,7 @@
 #pragma once
 
 #include <simd/bit_vector.h>
-#include <simd/byte_view.h>
+#include <simd/view.h>
 
 #include <cstdint>
 #include <type_traits>
@@ -34,25 +34,25 @@ __attribute((always_inline)) inline T dot_product(vector2<T> a, vector2<T> b) {
 
 template <typename ComponentType, typename IterationCountType, size_t Alignment>
 auto dot_product_n(
-        aligned_byte_view<vector2<ComponentType>, Alignment> a,
-        aligned_byte_view<vector2<ComponentType>, Alignment> b,
-        aligned_byte_view<ComponentType, Alignment>          out,
+        aligned_view<vector2<ComponentType>, Alignment> a,
+        aligned_view<vector2<ComponentType>, Alignment> b,
+        aligned_view<ComponentType, Alignment>          out,
         IterationCountType n) -> decltype(n(), void()) {
     // TODO: it currently only supports floating point types because integrals
     // would require twice the number of output bits
     static_assert(
             std::is_floating_point<ComponentType>::value,
             "dot_product_n only supports floating point types");
-    auto af = aligned_byte_view<ComponentType, Alignment>{
+    auto af = aligned_view<ComponentType, Alignment>{
             a.get()->template as<ComponentType*>()};
-    auto bf = aligned_byte_view<ComponentType, Alignment>{
+    auto bf = aligned_view<ComponentType, Alignment>{
             b.get()->template as<ComponentType*>()};
     size_t i = 0;
 #ifdef __AVX__
     if constexpr (Alignment >= 32) {
         using AVXVectorType = simd::bit_vector<ComponentType, 256>;
         using ByteViewType
-                = aligned_byte_view<ComponentType, AVXVectorType::width_bytes>;
+                = aligned_view<ComponentType, AVXVectorType::width_bytes>;
         ByteViewType af_view = af;
         ByteViewType bf_view = bf;
         const size_t simd_iterations
@@ -86,10 +86,10 @@ auto dot_product_n(
 
 template <typename T, size_t Alignment>
 inline void dot_product_n(
-        aligned_byte_view<vector2<T>, Alignment> a,
-        aligned_byte_view<vector2<T>, Alignment> b,
-        aligned_byte_view<T, Alignment>          out,
-        unsigned long long int                   n) {
+        aligned_view<vector2<T>, Alignment> a,
+        aligned_view<vector2<T>, Alignment> b,
+        aligned_view<T, Alignment>          out,
+        unsigned long long int              n) {
     auto iteration_count = [&] {
         struct anon {
             anon(size_t n) : _n{n} {}
@@ -103,14 +103,14 @@ inline void dot_product_n(
 
 template <typename T>
 inline void dot_product_n(
-        unaligned_byte_view<vector2<T>> a,
-        unaligned_byte_view<vector2<T>> b,
-        unaligned_byte_view<T>          out,
-        unsigned long long int          n) {
+        unaligned_view<vector2<T>> a,
+        unaligned_view<vector2<T>> b,
+        unaligned_view<T>          out,
+        unsigned long long int     n) {
     dot_product_n(
-            aligned_byte_view<vector2<T>, 1>{a.get()},
-            aligned_byte_view<vector2<T>, 1>{b.get()},
-            aligned_byte_view<T, 1>{out.get()},
+            aligned_view<vector2<T>, 1>{a.get()},
+            aligned_view<vector2<T>, 1>{b.get()},
+            aligned_view<T, 1>{out.get()},
             n);
 }
 

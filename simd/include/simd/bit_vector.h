@@ -1,6 +1,6 @@
 #pragma once
 
-#include <simd/byte_view.h>
+#include <simd/view.h>
 
 #include <immintrin.h>
 
@@ -43,19 +43,19 @@ struct bit_vector<int32_t, 128> {
         return {_mm_set_epi32(i0, i1, i2, i3)};
     }
 
-    static bit_vector<int32_t, 128> load(aligned_byte_view<int32_t, 16> ptr) {
+    static bit_vector<int32_t, 128> load(aligned_view<int32_t, 16> ptr) {
         return {_mm_load_si128(reinterpret_cast<__m128i*>(ptr.get()))};
     }
 
-    static bit_vector<int32_t, 128> load(unaligned_byte_view<int32_t> ptr) {
+    static bit_vector<int32_t, 128> load(unaligned_view<int32_t> ptr) {
         return {_mm_loadu_si128(reinterpret_cast<__m128i*>(ptr.get()))};
     }
 
-    void store(aligned_byte_view<int32_t, 16> ptr) const {
+    void store(aligned_view<int32_t, 16> ptr) const {
         _mm_store_si128(reinterpret_cast<__m128i*>(ptr.get()), data);
     }
 
-    void store(unaligned_byte_view<int32_t> ptr) const {
+    void store(unaligned_view<int32_t> ptr) const {
         _mm_storeu_si128(reinterpret_cast<__m128i*>(ptr.get()), data);
     }
 
@@ -86,19 +86,19 @@ struct bit_vector<int32_t, 256> {
         return {_mm256_set_epi32(i0, i1, i2, i3, i4, i5, i6, i7)};
     }
 
-    static bit_vector<int32_t, 256> load(aligned_byte_view<int32_t, 32> ptr) {
+    static bit_vector<int32_t, 256> load(aligned_view<int32_t, 32> ptr) {
         return {_mm256_load_si256(reinterpret_cast<__m256i*>(ptr.get()))};
     }
 
-    static bit_vector<int32_t, 256> load(unaligned_byte_view<int32_t> ptr) {
+    static bit_vector<int32_t, 256> load(unaligned_view<int32_t> ptr) {
         return {_mm256_loadu_si256(reinterpret_cast<__m256i*>(ptr.get()))};
     }
 
-    void store(aligned_byte_view<int32_t, 32> ptr) const {
+    void store(aligned_view<int32_t, 32> ptr) const {
         _mm256_store_si256(reinterpret_cast<__m256i*>(ptr.get()), data);
     }
 
-    void store(unaligned_byte_view<int32_t> ptr) const {
+    void store(unaligned_view<int32_t> ptr) const {
         _mm256_storeu_si256(reinterpret_cast<__m256i*>(ptr.get()), data);
     }
 
@@ -130,20 +130,16 @@ struct bit_vector<float, 128> {
         return {_mm_set_ps(f0, f1, f2, f3)};
     }
 
-    static bit_vector<float, 128> load(aligned_byte_view<float, 16> ptr) {
+    static bit_vector<float, 128> load(aligned_view<float, 16> ptr) {
         return {_mm_load_ps(ptr.get())};
     }
 
-    static bit_vector<float, 128> load(unaligned_byte_view<float> ptr) {
+    static bit_vector<float, 128> load(unaligned_view<float> ptr) {
         return {_mm_loadu_ps(ptr.get())};
     }
 
-    void store(aligned_byte_view<float, 16> ptr) {
-        _mm_store_ps(ptr.get(), data);
-    }
-    void store(unaligned_byte_view<float> ptr) {
-        _mm_storeu_ps(ptr.get(), data);
-    }
+    void store(aligned_view<float, 16> ptr) { _mm_store_ps(ptr.get(), data); }
+    void store(unaligned_view<float> ptr) { _mm_storeu_ps(ptr.get(), data); }
 
     explicit operator bit_vector<int32_t, 128>() const;
 
@@ -183,19 +179,19 @@ struct bit_vector<float, 256> {
         return {_mm256_set_ps(f0, f1, f2, f3, f4, f5, f6, f7)};
     }
 
-    static bit_vector<float, 256> load(aligned_byte_view<float, 32> ptr) {
+    static bit_vector<float, 256> load(aligned_view<float, 32> ptr) {
         return {_mm256_load_ps(ptr.get())};
     }
 
-    static bit_vector<float, 256> load(unaligned_byte_view<float> ptr) {
+    static bit_vector<float, 256> load(unaligned_view<float> ptr) {
         return {_mm256_loadu_ps(ptr.get())};
     }
 
-    void store(aligned_byte_view<float, 32> ptr) const {
+    void store(aligned_view<float, 32> ptr) const {
         _mm256_store_ps(ptr.get(), data);
     }
 
-    void store(unaligned_byte_view<float> ptr) const {
+    void store(unaligned_view<float> ptr) const {
         _mm256_storeu_ps(ptr.get(), data);
     }
 

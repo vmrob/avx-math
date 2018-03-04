@@ -14,18 +14,18 @@
 /// the alignment.
 ///
 /// ~~~cpp
-/// aligned_byte_view<int32_t, 32> view{ptr};
+/// aligned_view<int32_t, 32> view{ptr};
 /// assert((view + 1).get() == ptr + 8);
 /// static_assert(decltype(view)::size == 8);
 /// ~~~
 ///
 /// Without this behavior, view + 1 would result in an unaligned pointer.
 ///
-/// For all intents and purposes, unaligned_byte_view<T> is identical to
-/// aligned_byte_view<T, 1>, but exists for overload resolution.
+/// For all intents and purposes, unaligned_view<T> is identical to
+/// aligned_view<T, 1>, but exists for overload resolution.
 
 template <typename T>
-struct unaligned_byte_view {
+struct unaligned_view {
     T* data;
 
     using value_type                  = T;
@@ -41,19 +41,19 @@ struct unaligned_byte_view {
     T&       operator[](size_t i) { return data[i]; }
     const T& operator[](size_t i) const { return data[i]; }
 
-    unaligned_byte_view<T> operator+(long long int n) { return {data + n}; }
-    const unaligned_byte_view<T> operator+(long long int n) const {
+    unaligned_view<T>       operator+(long long int n) { return {data + n}; }
+    const unaligned_view<T> operator+(long long int n) const {
         return {data + n};
     }
-    unaligned_byte_view<T>& operator+=(long long int n) {
+    unaligned_view<T>& operator+=(long long int n) {
         data += n;
         return *this;
     }
-    unaligned_byte_view<T>& operator-(long long int n) { return {data - n}; }
-    const unaligned_byte_view<T>& operator-(long long int n) const {
+    unaligned_view<T>&       operator-(long long int n) { return {data - n}; }
+    const unaligned_view<T>& operator-(long long int n) const {
         return {data - n};
     }
-    unaligned_byte_view<T>& operator-=(long long int n) {
+    unaligned_view<T>& operator-=(long long int n) {
         data -= n;
         return *this;
     }
@@ -63,7 +63,7 @@ struct unaligned_byte_view {
 };
 
 template <typename T, size_t Alignment>
-struct aligned_byte_view {
+struct aligned_view {
     using aligned_type = __attribute((align_value(Alignment))) T*;
     aligned_type data;
 
@@ -89,32 +89,32 @@ struct aligned_byte_view {
     T&       operator[](size_t i) { return data[i]; }
     const T& operator[](size_t i) const { return data[i]; }
 
-    aligned_byte_view<T, Alignment> operator+(long long int n) {
+    aligned_view<T, Alignment> operator+(long long int n) {
         return {data + n * size};
     }
-    const aligned_byte_view<T, Alignment> operator+(long long int n) const {
+    const aligned_view<T, Alignment> operator+(long long int n) const {
         return {data + n * size};
     }
-    aligned_byte_view<T, Alignment>& operator+=(long long int n) {
+    aligned_view<T, Alignment>& operator+=(long long int n) {
         data += n * size;
         return *this;
     }
-    aligned_byte_view<T, Alignment>& operator-(long long int n) {
+    aligned_view<T, Alignment>& operator-(long long int n) {
         return {data - n * size};
     }
-    const aligned_byte_view<T, Alignment>& operator-(long long int n) const {
+    const aligned_view<T, Alignment>& operator-(long long int n) const {
         return {data - n * size};
     }
-    aligned_byte_view<T, Alignment>& operator-=(long long int n) {
+    aligned_view<T, Alignment>& operator-=(long long int n) {
         data -= n * size;
         return *this;
     }
     template <typename RhsT, size_t RhsAlignment>
-    bool operator==(const aligned_byte_view<RhsT, RhsAlignment>& rhs) const {
+    bool operator==(const aligned_view<RhsT, RhsAlignment>& rhs) const {
         return data == rhs.data;
     }
     template <typename RhsT, size_t RhsAlignment>
-    bool operator!=(const aligned_byte_view<RhsT, RhsAlignment>& rhs) const {
+    bool operator!=(const aligned_view<RhsT, RhsAlignment>& rhs) const {
         return data != rhs.data;
     }
 
@@ -122,33 +122,32 @@ struct aligned_byte_view {
     const T* get() const { return data; }
 
     template <size_t NewAlignment>
-    operator aligned_byte_view<T, NewAlignment>() {
+    operator aligned_view<T, NewAlignment>() {
         static_assert(
                 Alignment > NewAlignment,
                 "invalid conversion to more restrictive alignment");
-        return aligned_byte_view<T, NewAlignment>{data};
+        return aligned_view<T, NewAlignment>{data};
     }
 
     template <size_t NewAlignment>
-    operator aligned_byte_view<const T, NewAlignment>() const {
+    operator aligned_view<const T, NewAlignment>() const {
         static_assert(
                 Alignment > NewAlignment,
                 "invalid conversion to more restrictive alignment");
-        return aligned_byte_view<const T, NewAlignment>{data};
+        return aligned_view<const T, NewAlignment>{data};
     }
 
-    explicit operator unaligned_byte_view<T>() { return {data}; }
-    explicit operator unaligned_byte_view<const T>() const { return {data}; }
+    explicit operator unaligned_view<T>() { return {data}; }
+    explicit operator unaligned_view<const T>() const { return {data}; }
 };
 
 template <size_t Alignment, typename T>
-aligned_byte_view<T, Alignment> make_aligned_byte_view(T* ptr) {
+aligned_view<T, Alignment> make_aligned_view(T* ptr) {
     assert(*reinterpret_cast<size_t*>(&ptr) % Alignment == 0);
     return {ptr};
 }
 
 template <typename T>
-unaligned_byte_view<T> make_unaligned_byte_view(T* ptr) {
+unaligned_view<T> make_unaligned_view(T* ptr) {
     return {ptr};
 }
-
