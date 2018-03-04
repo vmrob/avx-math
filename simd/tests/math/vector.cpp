@@ -1,7 +1,9 @@
 #include <simd/math/vector.h>
+#include <simd/memory.h>
 
 #include <gtest/gtest.h>
 
+#include <cstdlib>
 #include <random>
 
 using namespace math;
@@ -30,10 +32,10 @@ std::ostream& operator<<(std::ostream& os, simd::f32x8 v) {
 
 class vector_fixture : public ::testing::Test {
 public:
-    vector2f* a        = nullptr;
-    vector2f* b        = nullptr;
-    float*    result   = nullptr;
-    float*    expected = nullptr;
+    vector2f* a     = nullptr;
+    vector2f* b     = nullptr;
+    float* result   = nullptr;
+    float* expected = nullptr;
 
     void TearDown() { free_vectors(); }
 
@@ -49,14 +51,10 @@ public:
     }
 
     void allocate_vectors() {
-        posix_memalign(
-                reinterpret_cast<void**>(&a), 32, sizeof(vector2f) * _size);
-        posix_memalign(
-                reinterpret_cast<void**>(&b), 32, sizeof(vector2f) * _size);
-        posix_memalign(
-                reinterpret_cast<void**>(&result), 32, sizeof(float) * _size);
-        posix_memalign(
-                reinterpret_cast<void**>(&expected), 32, sizeof(float) * _size);
+        a        = simd::aligned_alloc<vector2f>(32, sizeof(vector2f) * _size);
+        b        = simd::aligned_alloc<vector2f>(32, sizeof(vector2f) * _size);
+        result   = simd::aligned_alloc<float>(32, sizeof(float) * _size);
+        expected = simd::aligned_alloc<float>(32, sizeof(float) * _size);
     }
 
     void regenerate(size_t n) {
