@@ -1,5 +1,5 @@
-#include <simd/math/vector.h>
 #include <simd/math/dot_product.h>
+#include <simd/math/vector.h>
 
 #include <benchmark/benchmark.h>
 
@@ -9,8 +9,8 @@
 using namespace simd::math;
 
 void gen_vectors(vector2f* vectors, size_t n) {
-    std::random_device                    rd;
-    std::mt19937                          gen(rd());
+    std::random_device rd;
+    std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10000.0f, 10000.0f);
     for (size_t i = 0; i < n; ++i) {
         vectors[i].x = dis(gen);
@@ -19,9 +19,9 @@ void gen_vectors(vector2f* vectors, size_t n) {
 }
 
 struct test_data {
-    vector2f* a   = nullptr;
-    vector2f* b   = nullptr;
-    float*    out = nullptr;
+    vector2f* a = nullptr;
+    vector2f* b = nullptr;
+    float* out  = nullptr;
 
     test_data(size_t n) {
         posix_memalign(reinterpret_cast<void**>(&a), 32, sizeof(vector2f) * n);
@@ -130,5 +130,25 @@ static void BM_dot_product_n_unaligned(benchmark::State& state) {
 }
 
 BENCHMARK(BM_dot_product_n_unaligned)->Range(2, 16192);
+
+static void BM_dot_product_naive(benchmark::State& state) {
+    const size_t n = state.range(0);
+
+    test_data data{n};
+
+    while (state.KeepRunning()) {
+        for (size_t i = 0; i < n; ++i) {
+            data.out[i] = data.a->dot(*data.b);
+        }
+
+        benchmark::DoNotOptimize(data.a);
+        benchmark::DoNotOptimize(data.b);
+        benchmark::DoNotOptimize(data.out);
+        benchmark::ClobberMemory();
+    }
+    state.SetItemsProcessed(state.iterations() * n);
+}
+
+BENCHMARK(BM_dot_product_naive)->Range(2, 16192);
 
 BENCHMARK_MAIN();
