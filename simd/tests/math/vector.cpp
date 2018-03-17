@@ -2,109 +2,113 @@
 
 #include <gtest/gtest.h>
 
-template <typename T, typename X, typename Y>
-void TestConstruction(X x, Y y) {
-    T vec = {.x = x, .y = y};
-    EXPECT_EQ(vec.x, x);
-    EXPECT_EQ(vec.y, y);
-}
+template <typename T>
+void TestAddition() {
+    using X = decltype(T::x);
+    using Y = decltype(T::y);
 
-TEST(vector2, construction) {
-    TestConstruction<simd::math::vector2i>(1, 2);
-    TestConstruction<simd::math::vector2l>(1l, 2l);
-    TestConstruction<simd::math::vector2f>(1.0f, 2.0f);
-    TestConstruction<simd::math::vector2d>(1.0, 2.0);
-}
-
-template <typename T, typename X, typename Y>
-void TestAddition(X x, Y y) {
+    constexpr T v1 = {.x = X(1.0), .y = Y(2.0)};
+    constexpr T v2 = {.x = X(3.0), .y = Y(4.0)};
     {
-        T vec = {.x = x, .y = y};
-        vec += T{.x = x, .y = y};
-        EXPECT_EQ(vec.x, x + x);
-        EXPECT_EQ(vec.y, y + y);
+        T vec = v1;
+        vec += v2;
+        EXPECT_EQ(vec.x, X(4.0));
+        EXPECT_EQ(vec.y, Y(6.0));
     }
     {
-        const T vec = T{.x = x, .y = y} + T{.x = x, .y = y};
-        EXPECT_EQ(vec.x, x + x);
-        EXPECT_EQ(vec.y, y + y);
+        const T vec = v1 + v2;
+        EXPECT_EQ(vec.x, X(4.0));
+        EXPECT_EQ(vec.y, Y(6.0));
     }
 }
 
 TEST(vector2, addition) {
-    TestAddition<simd::math::vector2i>(1, 2);
-    TestAddition<simd::math::vector2l>(1l, 2l);
-    TestAddition<simd::math::vector2f>(1.0f, 2.0f);
-    TestAddition<simd::math::vector2d>(1.0, 2.0);
+    TestAddition<simd::math::vector2i>();
+    TestAddition<simd::math::vector2l>();
+    TestAddition<simd::math::vector2f>();
+    TestAddition<simd::math::vector2d>();
 }
 
-template <typename T, typename X, typename Y>
-void TestSubtraction(X x, Y y) {
+template <typename T>
+void TestSubtraction() {
+    using X = decltype(T::x);
+    using Y = decltype(T::y);
+
+    constexpr T v1 = {.x = X(1.0), .y = Y(2.0)};
+    constexpr T v2 = {.x = X(3.0), .y = Y(4.0)};
     {
-        T vec = {.x = 2 * x, .y = 2 * y};
-        vec -= T{.x = x, .y = y};
-        EXPECT_EQ(vec.x, x);
-        EXPECT_EQ(vec.y, y);
+        T vec = v2;
+        vec -= v1;
+        EXPECT_EQ(vec.x, 2.0);
+        EXPECT_EQ(vec.y, 2.0);
     }
     {
-        const T vec = T{.x = 2 * x, .y = 2 * y} - T{.x = x, .y = y};
-        EXPECT_EQ(vec.x, x);
-        EXPECT_EQ(vec.y, y);
+        const T vec = v2 - v1;
+        EXPECT_EQ(vec.x, 2.0);
+        EXPECT_EQ(vec.y, 2.0);
     }
 }
 
 TEST(vector2, subtraction) {
-    TestSubtraction<simd::math::vector2i>(1, 2);
-    TestSubtraction<simd::math::vector2l>(1l, 2l);
-    TestSubtraction<simd::math::vector2f>(1.0f, 2.0f);
-    TestSubtraction<simd::math::vector2d>(1.0, 2.0);
+    TestSubtraction<simd::math::vector2i>();
+    TestSubtraction<simd::math::vector2l>();
+    TestSubtraction<simd::math::vector2f>();
+    TestSubtraction<simd::math::vector2d>();
 }
 
-template <typename T, typename V, typename S>
-void TestMultiplicationByScalar(V v, S s) {
+template <typename T>
+void TestMultiplicationByScalar() {
+    using X = decltype(T::x);
+    using Y = decltype(T::y);
+
+    constexpr T v = {.x = X(1.0), .y = Y(2.0)};
     {
-        T vec = {.x = 2 * v, .y = v};
-        vec *= s;
-        EXPECT_EQ(vec.x, 2 * v * s);
-        EXPECT_EQ(vec.y, v * s);
+        T vec = v;
+        vec *= 2.0;
+        EXPECT_EQ(vec.x, 2.0);
+        EXPECT_EQ(vec.y, 4.0);
     }
     {
-        const T vec = T{.x = 2 * v, .y = v} * s;
-        EXPECT_EQ(vec.x, 2 * v * s);
-        EXPECT_EQ(vec.y, v * s);
+        const T vec = v * 2.0;
+        EXPECT_EQ(vec.x, 2.0);
+        EXPECT_EQ(vec.y, 4.0);
     }
     {
-        const T vec = s * T{.x = 2 * v, .y = v};
-        EXPECT_EQ(vec.x, 2 * v * s);
-        EXPECT_EQ(vec.y, v * s);
+        const T vec = 2.0 * v;
+        EXPECT_EQ(vec.x, 2.0);
+        EXPECT_EQ(vec.y, 4.0);
     }
 }
 
 TEST(vector2, multiplication) {
-    TestMultiplicationByScalar<simd::math::vector2i>(1, 2);
-    TestMultiplicationByScalar<simd::math::vector2l>(1l, 2l);
-    TestMultiplicationByScalar<simd::math::vector2f>(1.0f, 2.0f);
-    TestMultiplicationByScalar<simd::math::vector2d>(1.0, 2.0);
+    TestMultiplicationByScalar<simd::math::vector2i>();
+    TestMultiplicationByScalar<simd::math::vector2l>();
+    TestMultiplicationByScalar<simd::math::vector2f>();
+    TestMultiplicationByScalar<simd::math::vector2d>();
 }
 
-template <typename T, typename V, typename S>
-void TestDivisionByScalar(V v, S s) {
+template <typename T>
+void TestDivisionByScalar() {
+    using X = decltype(T::x);
+    using Y = decltype(T::y);
+
+    constexpr T v = {.x = X(2.0), .y = Y(4.0)};
     {
-        T vec = {.x = 2 * v, .y = v};
-        vec /= s;
-        EXPECT_EQ(vec.x, 2 * v / s);
-        EXPECT_EQ(vec.y, v / s);
+        T vec = v;
+        vec /= 2.0;
+        EXPECT_EQ(vec.x, 1.0);
+        EXPECT_EQ(vec.y, 2.0);
     }
     {
-        const T vec = T{.x = 2 * v, .y = v} / s;
-        EXPECT_EQ(vec.x, 2 * v / s);
-        EXPECT_EQ(vec.y, v / s);
+        const T vec = v / 2.0;
+        EXPECT_EQ(vec.x, 1.0);
+        EXPECT_EQ(vec.y, 2.0);
     }
 }
 
 TEST(vector2, division) {
-    TestDivisionByScalar<simd::math::vector2i>(1, 2);
-    TestDivisionByScalar<simd::math::vector2l>(1l, 2l);
-    TestDivisionByScalar<simd::math::vector2f>(1.0f, 2.0f);
-    TestDivisionByScalar<simd::math::vector2d>(1.0, 2.0);
+    TestDivisionByScalar<simd::math::vector2i>();
+    TestDivisionByScalar<simd::math::vector2l>();
+    TestDivisionByScalar<simd::math::vector2f>();
+    TestDivisionByScalar<simd::math::vector2d>();
 }

@@ -73,17 +73,17 @@ using vector2d = vector2<double>;
 
 template <typename T, typename Scalar>
 constexpr vector2<T> operator*(const vector2<T> vec, Scalar s) {
-    return {.x = vec.x * s, .y = vec.y * s};
+    return {.x = T(vec.x * s), .y = T(vec.y * s)};
 }
 
 template <typename T, typename Scalar>
 constexpr vector2<T> operator*(Scalar s, const vector2<T> vec) {
-    return {.x = s * vec.x, .y = s * vec.y};
+    return {.x = T(s * vec.x), .y = T(s * vec.y)};
 }
 
 template <typename T, typename Scalar>
 constexpr vector2<T> operator/(const vector2<T> vec, Scalar s) {
-    return {.x = vec.x / s, .y = vec.y / s};
+    return {.x = T(vec.x / s), .y = T(vec.y / s)};
 }
 
 }  // namespace simd::math
