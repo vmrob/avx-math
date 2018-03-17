@@ -1,6 +1,6 @@
 cc_binary(
-    name = "main",
-    srcs = ["math/vector.cpp"],
+    name = "dot_product",
+    srcs = ["math/dot_product.cpp"],
     deps = [
         "//simd",
         "@benchmark//:main"

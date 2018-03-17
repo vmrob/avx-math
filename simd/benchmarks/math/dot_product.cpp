@@ -1,11 +1,12 @@
 #include <simd/math/vector.h>
+#include <simd/math/dot_product.h>
 
 #include <benchmark/benchmark.h>
 
 #include <cstdlib>
 #include <random>
 
-using namespace math;
+using namespace simd::math;
 
 void gen_vectors(vector2f* vectors, size_t n) {
     std::random_device                    rd;

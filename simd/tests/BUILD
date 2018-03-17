@@ -21,9 +21,9 @@ cc_test(
 )
 
 cc_test(
-    name = "vector",
+    name = "dot_product",
     size = "small",
-    srcs = ["math/vector.cpp"],
+    srcs = ["math/dot_product.cpp"],
     visibility = ["//main:__pkg__"],
     deps = [
         "//simd",
