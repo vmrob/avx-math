@@ -5,6 +5,9 @@
 
 namespace simd {
 
+template <typename T, size_t Alignment>
+struct aligned_view;
+
 template <typename T>
 struct unaligned_view {
     T* data;
@@ -57,6 +60,9 @@ struct unaligned_view {
         static_assert(std::is_trivial_v<T>);
         return unaligned_view<const U>{reinterpret_cast<U*>(data)};
     }
+
+    explicit operator aligned_view<T, 1>() { return {data}; }
+    explicit operator aligned_view<const T, 1>() const { return {data}; }
 };
 
 template <typename T, size_t Alignment>

@@ -1,9 +1,8 @@
 #pragma once
 
 #include <simd/bit_vector.h>
-#include <simd/view.h>
-
 #include <simd/math/vector.h>
+#include <simd/view.h>
 
 namespace simd::math {
 
@@ -81,9 +80,9 @@ inline void dot_product_n(
         unaligned_view<T> out,
         unsigned long long int n) {
     dot_product_n(
-            aligned_view<vector2<T>, 1>{a.get()},
-            aligned_view<vector2<T>, 1>{b.get()},
-            aligned_view<T, 1>{out.get()},
+            aligned_view<vector2<T>, 1>(a),
+            aligned_view<vector2<T>, 1>(b),
+            aligned_view<T, 1>(out),
             n);
 }
 
