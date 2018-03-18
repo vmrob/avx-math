@@ -1,14 +1,13 @@
 #include <simd/math/dot_product.h>
 #include <simd/math/vector.h>
+#include <simd/memory.h>
 
 #include <benchmark/benchmark.h>
 
 #include <cstdlib>
 #include <random>
 
-using namespace simd::math;
-
-void gen_vectors(vector2f* vectors, size_t n) {
+void gen_vectors(simd::math::vector2f* vectors, size_t n) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(-10000.0f, 10000.0f);
@@ -19,14 +18,16 @@ void gen_vectors(vector2f* vectors, size_t n) {
 }
 
 struct test_data {
-    vector2f* a = nullptr;
-    vector2f* b = nullptr;
-    float* out  = nullptr;
+    simd::math::vector2f* a = nullptr;
+    simd::math::vector2f* b = nullptr;
+    float* out              = nullptr;
 
     test_data(size_t n) {
-        posix_memalign(reinterpret_cast<void**>(&a), 32, sizeof(vector2f) * n);
-        posix_memalign(reinterpret_cast<void**>(&b), 32, sizeof(vector2f) * n);
-        posix_memalign(reinterpret_cast<void**>(&out), 32, sizeof(float) * n);
+        a = simd::aligned_alloc<simd::math::vector2f>(
+                32, sizeof(simd::math::vector2f) * n);
+        b = simd::aligned_alloc<simd::math::vector2f>(
+                32, sizeof(simd::math::vector2f) * n);
+        out = simd::aligned_alloc<float>(32, sizeof(float) * n);
         gen_vectors(a, n);
         gen_vectors(b, n);
     }
@@ -137,7 +138,6 @@ static void BM_dot_product_naive(benchmark::State& state) {
     test_data data{n};
 
     while (state.KeepRunning()) {
-#pragma unroll 4
         for (size_t i = 0; i < n; ++i) {
             data.out[i] = data.a[i].dot(data.b[i]);
         }
