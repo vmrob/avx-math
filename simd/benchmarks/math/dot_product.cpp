@@ -45,9 +45,9 @@ static void BM_dot_product_n_aligned(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         dot_product_n(
-                as_aligned_view<32>(data.a),
-                as_aligned_view<32>(data.b),
-                as_aligned_view<32>(data.out),
+                simd::as_aligned_view<32>(data.a),
+                simd::as_aligned_view<32>(data.b),
+                simd::as_aligned_view<32>(data.out),
                 n);
 
         benchmark::DoNotOptimize(data.a);
@@ -66,9 +66,9 @@ static void BM_dot_product_impl(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         dot_product_n(
-                as_aligned_view<32>(data.a),
-                as_aligned_view<32>(data.b),
-                as_aligned_view<32>(data.out),
+                simd::as_aligned_view<32>(data.a),
+                simd::as_aligned_view<32>(data.b),
+                simd::as_aligned_view<32>(data.out),
                 std::integral_constant<size_t, I>{});
 
         benchmark::DoNotOptimize(data.a);
@@ -116,9 +116,9 @@ static void BM_dot_product_n_unaligned(benchmark::State& state) {
 
     while (state.KeepRunning()) {
         dot_product_n(
-                as_unaligned_view(data.a),
-                as_unaligned_view(data.b),
-                as_unaligned_view(data.out),
+                simd::as_unaligned_view(data.a),
+                simd::as_unaligned_view(data.b),
+                simd::as_unaligned_view(data.out),
                 n);
 
         benchmark::DoNotOptimize(data.a);
