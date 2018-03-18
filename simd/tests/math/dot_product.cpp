@@ -1,5 +1,5 @@
 #include <simd/math/dot_product.h>
-#include <simd/math/vector.h>
+#include <simd/math/vector2.h>
 #include <simd/memory.h>
 
 #include <gtest/gtest.h>

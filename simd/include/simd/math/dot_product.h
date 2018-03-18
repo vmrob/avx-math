@@ -1,7 +1,7 @@
 #pragma once
 
 #include <simd/bit_vector.h>
-#include <simd/math/vector.h>
+#include <simd/math/vector2.h>
 #include <simd/view.h>
 
 namespace simd::math {

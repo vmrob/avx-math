@@ -1,4 +1,4 @@
-#include <simd/math/vector.h>
+#include <simd/math/vector2.h>
 
 #include <gtest/gtest.h>
 

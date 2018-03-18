@@ -21,9 +21,9 @@ cc_test(
 )
 
 cc_test(
-    name = "vector",
+    name = "vector2",
     size = "small",
-    srcs = ["math/vector.cpp"],
+    srcs = ["math/vector2.cpp"],
     visibility = ["//main:__pkg__"],
     deps = [
         "//simd",
