@@ -65,14 +65,14 @@ public:
 
     void calculate() {
         dot_product_n(
-                as_unaligned_view(a),
-                as_unaligned_view(b),
-                as_unaligned_view(expected),
+                simd::as_unaligned_view(a),
+                simd::as_unaligned_view(b),
+                simd::as_unaligned_view(expected),
                 _size);
         dot_product_n(
-                as_aligned_view<32>(a),
-                as_aligned_view<32>(b),
-                as_aligned_view<32>(result),
+                simd::as_aligned_view<32>(a),
+                simd::as_aligned_view<32>(b),
+                simd::as_aligned_view<32>(result),
                 _size);
     }
 

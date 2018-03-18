@@ -48,21 +48,6 @@ struct vector2 {
     constexpr T dot(const vector2<T> other) const {
         return x * other.x + y * other.y;
     }
-
-    template <typename U>
-    constexpr U as() {
-        static_assert(std::is_pointer_v<U>);
-        static_assert(std::is_trivial_v<std::remove_pointer_t<U>>);
-        return reinterpret_cast<U>(this);
-    }
-
-    template <typename U>
-    constexpr U as() const {
-        static_assert(std::is_const_v<U>);
-        static_assert(std::is_pointer_v<U>);
-        static_assert(std::is_trivial_v<std::remove_pointer_t<U>>);
-        return reinterpret_cast<U>(this);
-    }
 };
 #pragma pack(pop)
 
