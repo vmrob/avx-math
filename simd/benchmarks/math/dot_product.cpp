@@ -137,8 +137,9 @@ static void BM_dot_product_naive(benchmark::State& state) {
     test_data data{n};
 
     while (state.KeepRunning()) {
+#pragma unroll 4
         for (size_t i = 0; i < n; ++i) {
-            data.out[i] = data.a->dot(*data.b);
+            data.out[i] = data.a[i].dot(data.b[i]);
         }
 
         benchmark::DoNotOptimize(data.a);

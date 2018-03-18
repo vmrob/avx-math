@@ -7,11 +7,11 @@
 namespace simd::math {
 
 template <typename ComponentType, typename IterationCountType, size_t Alignment>
-auto dot_product_n(
+void dot_product_n(
         aligned_view<vector2<ComponentType>, Alignment> a,
         aligned_view<vector2<ComponentType>, Alignment> b,
         aligned_view<ComponentType, Alignment> out,
-        IterationCountType n) -> decltype(n(), void()) {
+        IterationCountType n) {
     // TODO: it currently only supports floating point types because integrals
     // would require twice the number of output bits
     static_assert(
@@ -28,7 +28,7 @@ auto dot_product_n(
         ByteViewType af_view = af;
         ByteViewType bf_view = bf;
         const size_t simd_iterations
-                = n() / ByteViewType::size;  // intentionally truncates
+                = n / ByteViewType::size;  // intentionally truncates
 #pragma unroll 4
         for (; i + 2 <= simd_iterations; ++i) {
             // [a1x*b1x, a1y*b1y, a2x*b2x, a2y*b2y, ...]
@@ -50,40 +50,22 @@ auto dot_product_n(
         i *= ByteViewType::size;
     }
 #endif
-#pragma unroll 8
-    for (; i < n(); ++i) {
+#pragma unroll 4
+    for (; i < n; ++i) {
         out[i] = a[i].dot(b[i]);
     }
 }
 
-template <typename T, size_t Alignment>
-inline void dot_product_n(
-        aligned_view<vector2<T>, Alignment> a,
-        aligned_view<vector2<T>, Alignment> b,
-        aligned_view<T, Alignment> out,
-        unsigned long long int n) {
-    auto iteration_count = [&] {
-        struct anon {
-            anon(size_t n) : _n{n} {}
-            size_t operator()() const { return _n; }
-            size_t _n;
-        };
-        return anon{n};
-    }();
-    dot_product_n(a, b, out, iteration_count);
-}
-
-template <typename T>
+template <typename T, typename IterationType>
 inline void dot_product_n(
         unaligned_view<vector2<T>> a,
         unaligned_view<vector2<T>> b,
         unaligned_view<T> out,
-        unsigned long long int n) {
-    dot_product_n(
-            aligned_view<vector2<T>, 1>(a),
-            aligned_view<vector2<T>, 1>(b),
-            aligned_view<T, 1>(out),
-            n);
+        IterationType n) {
+#pragma unroll 4
+    for (size_t i = 0; i < n; ++i) {
+        out[i] = a[i].dot(b[i]);
+    }
 }
 
 }  // namespace simd::math
